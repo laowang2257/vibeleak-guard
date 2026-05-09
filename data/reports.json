@@ -1,0 +1,58 @@
+[
+  {
+    "url": "https://example.com/",
+    "score": 75,
+    "summary": "No obvious critical secret found, but hardening gaps were detected.",
+    "findings": [
+      {
+        "severity": "low",
+        "title": "Missing content-security-policy",
+        "evidence": "Response header not present",
+        "recommendation": "Add a Content-Security-Policy to reduce data exfiltration and script injection impact."
+      },
+      {
+        "severity": "low",
+        "title": "Missing x-frame-options",
+        "evidence": "Response header not present",
+        "recommendation": "Add X-Frame-Options or frame-ancestors to reduce clickjacking risk."
+      },
+      {
+        "severity": "low",
+        "title": "Missing x-content-type-options",
+        "evidence": "Response header not present",
+        "recommendation": "Add X-Content-Type-Options: nosniff."
+      },
+      {
+        "severity": "low",
+        "title": "Missing referrer-policy",
+        "evidence": "Response header not present",
+        "recommendation": "Add a strict Referrer-Policy to avoid leaking paths or tokens to third parties."
+      },
+      {
+        "severity": "low",
+        "title": "Missing permissions-policy",
+        "evidence": "Response header not present",
+        "recommendation": "Add a Permissions-Policy to disable unused browser capabilities."
+      }
+    ],
+    "headers": {
+      "age": "13123",
+      "allow": "GET, HEAD",
+      "cf-cache-status": "HIT",
+      "cf-ray": "9f8c73956a998aa4-NRT",
+      "connection": "keep-alive",
+      "content-encoding": "br",
+      "content-type": "text/html",
+      "date": "Sat, 09 May 2026 00:05:15 GMT",
+      "last-modified": "Fri, 08 May 2026 20:06:57 GMT",
+      "server": "cloudflare",
+      "transfer-encoding": "chunked"
+    },
+    "checkedAssets": [
+      "https://example.com/"
+    ],
+    "id": "204697f7-8f74-4cbe-9ed0-bbd82f2af84e",
+    "createdAt": "2026-05-09T00:05:15.762Z",
+    "paid": false
+  }
+]
