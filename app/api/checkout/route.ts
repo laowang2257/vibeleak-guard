@@ -9,13 +9,13 @@ export async function POST(req: Request) {
   const secret = process.env.STRIPE_SECRET_KEY;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   if (!secret || secret.includes('replace_me')) {
-    return NextResponse.json({ error: 'Stripe is not configured. Add STRIPE_SECRET_KEY and NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.' }, { status: 503 });
+    return NextResponse.json({ error: 'Stripe が未設定です。STRIPE_SECRET_KEY と NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY を設定してください。' }, { status: 503 });
   }
 
   try {
     const { reportId } = Body.parse(await req.json());
     const report = await getReport(reportId);
-    if (!report) return NextResponse.json({ error: 'Report not found' }, { status: 404 });
+    if (!report) return NextResponse.json({ error: 'レポートが見つかりません' }, { status: 404 });
 
     const stripe = new Stripe(secret);
     const amount = Number(process.env.PRICE_AMOUNT_CENTS || 900);
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
         price_data: {
           currency,
           unit_amount: amount,
-          product_data: { name: 'VibeLeak Guard full security report', description: `Full report for ${report.url}` }
+          product_data: { name: 'VibeLeak Guard 完全セキュリティレポート', description: `${report.url} の完全レポート` }
         },
         quantity: 1
       }],
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     });
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Checkout failed';
+    const message = error instanceof Error ? error.message : 'Checkout に失敗しました';
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }

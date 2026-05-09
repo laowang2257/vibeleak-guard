@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 const src = readFileSync(new URL('../lib/scanner.ts', import.meta.url), 'utf8');
-const required = ['Stripe secret key', 'OpenAI API key', 'Missing ${header}', 'Public source map detected'];
+const required = ['Stripe secret key', 'OpenAI API key', '${header} が未設定です', '公開 source map を検出しました'];
 for (const token of required) {
   if (!src.includes(token)) throw new Error(`scanner missing token: ${token}`);
 }

@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     const report = await createReport(scan);
     return NextResponse.json({ id: report.id, score: report.score, summary: report.summary, findingsCount: report.findings.length });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Scan failed';
+    const message = error instanceof Error ? error.message : 'スキャンに失敗しました';
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }

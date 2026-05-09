@@ -21,21 +21,21 @@ export type ScanReport = {
 };
 
 const SECRET_PATTERNS: { name: string; regex: RegExp; severity: FindingSeverity; recommendation: string }[] = [
-  { name: 'OpenAI API key', regex: /sk-[A-Za-z0-9_-]{20,}/g, severity: 'critical', recommendation: 'Revoke the key, rotate affected secrets, and move API calls behind a server-side endpoint.' },
-  { name: 'Stripe secret key', regex: /sk_(live|test)_[A-Za-z0-9]{16,}/g, severity: 'critical', recommendation: 'Revoke the Stripe secret key and ensure only publishable keys are shipped to the browser.' },
-  { name: 'AWS access key id', regex: /AKIA[0-9A-Z]{16}/g, severity: 'high', recommendation: 'Disable or rotate the IAM key and audit CloudTrail for unexpected usage.' },
-  { name: 'Private key block', regex: /-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----/g, severity: 'critical', recommendation: 'Remove the private key from public assets and rotate certificates or deploy keys.' },
-  { name: 'Firebase/Google API key', regex: /AIza[0-9A-Za-z_-]{25,}/g, severity: 'medium', recommendation: 'Restrict the key by HTTP referrer and API scope; keep privileged services server-side.' },
-  { name: 'JWT token', regex: /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/g, severity: 'high', recommendation: 'Invalidate the token, shorten token TTLs, and avoid embedding user/session tokens in static output.' },
-  { name: 'Likely env assignment', regex: /(SECRET|TOKEN|PASSWORD|PRIVATE_KEY|DATABASE_URL)\s*[:=]\s*['\"][^'\"]{8,}/gi, severity: 'high', recommendation: 'Remove environment values from client bundles and use server-only environment variables.' }
+  { name: 'OpenAI API key', regex: /sk-[A-Za-z0-9_-]{20,}/g, severity: 'critical', recommendation: 'キーを失効・ローテーションし、API呼び出しをサーバー側エンドポイントへ移してください。' },
+  { name: 'Stripe secret key', regex: /sk_(live|test)_[A-Za-z0-9]{16,}/g, severity: 'critical', recommendation: 'Stripe secret key を失効し、ブラウザへは publishable key のみ配信してください。' },
+  { name: 'AWS access key id', regex: /AKIA[0-9A-Z]{16}/g, severity: 'high', recommendation: 'IAMキーを無効化またはローテーションし、CloudTrailで不審利用を監査してください。' },
+  { name: 'Private key block', regex: /-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----/g, severity: 'critical', recommendation: '公開アセットから秘密鍵を削除し、証明書またはデプロイキーをローテーションしてください。' },
+  { name: 'Firebase/Google API key', regex: /AIza[0-9A-Za-z_-]{25,}/g, severity: 'medium', recommendation: 'HTTP referrer とAPIスコープでキーを制限し、特権サービスはサーバー側に置いてください。' },
+  { name: 'JWT token', regex: /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/g, severity: 'high', recommendation: 'トークンを無効化し、TTLを短縮し、ユーザー/セッショントークンを静的出力へ埋め込まないでください。' },
+  { name: 'Likely env assignment', regex: /(SECRET|TOKEN|PASSWORD|PRIVATE_KEY|DATABASE_URL)\s*[:=]\s*['\"][^'\"]{8,}/gi, severity: 'high', recommendation: 'クライアントバンドルから環境値を削除し、サーバー専用環境変数を使用してください。' }
 ];
 
 const SECURITY_HEADERS = [
-  ['content-security-policy', 'Add a Content-Security-Policy to reduce data exfiltration and script injection impact.'],
-  ['x-frame-options', 'Add X-Frame-Options or frame-ancestors to reduce clickjacking risk.'],
-  ['x-content-type-options', 'Add X-Content-Type-Options: nosniff.'],
-  ['referrer-policy', 'Add a strict Referrer-Policy to avoid leaking paths or tokens to third parties.'],
-  ['permissions-policy', 'Add a Permissions-Policy to disable unused browser capabilities.']
+  ['content-security-policy', 'データ流出やスクリプト注入の影響を抑えるため、Content-Security-Policy を追加してください。'],
+  ['x-frame-options', 'クリックジャッキング対策として X-Frame-Options または frame-ancestors を追加してください。'],
+  ['x-content-type-options', 'X-Content-Type-Options: nosniff を追加してください。'],
+  ['referrer-policy', 'パスやトークンが第三者へ漏れないよう、厳格な Referrer-Policy を追加してください。'],
+  ['permissions-policy', '未使用のブラウザ機能を無効化するため、Permissions-Policy を追加してください。']
 ] as const;
 
 function redact(s: string) {
@@ -77,7 +77,7 @@ function extractAssets(baseUrl: string, html: string): string[] {
 
 export async function scanUrl(inputUrl: string): Promise<Omit<ScanReport, 'id' | 'createdAt' | 'paid' | 'checkoutSessionId'>> {
   const url = new URL(inputUrl);
-  if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Only http/https URLs are supported');
+  if (!['http:', 'https:'].includes(url.protocol)) throw new Error('http/https のURLのみ対応しています');
 
   const findings: Finding[] = [];
   const checkedAssets: string[] = [url.toString()];
@@ -85,7 +85,7 @@ export async function scanUrl(inputUrl: string): Promise<Omit<ScanReport, 'id' |
 
   for (const [header, recommendation] of SECURITY_HEADERS) {
     if (!main.headers[header]) {
-      findings.push({ severity: 'low', title: `Missing ${header}`, evidence: 'Response header not present', recommendation });
+      findings.push({ severity: 'low', title: `${header} が未設定です`, evidence: 'レスポンスヘッダーが存在しません', recommendation });
     }
   }
 
@@ -97,7 +97,7 @@ export async function scanUrl(inputUrl: string): Promise<Omit<ScanReport, 'id' |
       checkedAssets.push(asset);
       combined += `\n/* ${asset} */\n${fetched.text}`;
       if (asset.includes('.map')) {
-        findings.push({ severity: 'medium', title: 'Public source map detected', evidence: asset, recommendation: 'Disable production source maps or restrict access if they reveal source code or internal paths.' });
+        findings.push({ severity: 'medium', title: '公開 source map を検出しました', evidence: asset, recommendation: 'ソースコードや内部パスが含まれる場合、本番 source map を無効化するかアクセス制限してください。' });
       }
     } catch {
       // keep scan resilient; asset fetch failures are not fatal
@@ -107,18 +107,18 @@ export async function scanUrl(inputUrl: string): Promise<Omit<ScanReport, 'id' |
   for (const pat of SECRET_PATTERNS) {
     const matches = combined.match(pat.regex) || [];
     for (const match of [...new Set(matches)].slice(0, 5)) {
-      findings.push({ severity: pat.severity, title: `Possible exposed ${pat.name}`, evidence: redact(match), recommendation: pat.recommendation });
+      findings.push({ severity: pat.severity, title: `${pat.name} が露出している可能性があります`, evidence: redact(match), recommendation: pat.recommendation });
     }
   }
 
   const finalScore = score(findings);
   const summary = findings.some(f => f.severity === 'critical')
-    ? 'Critical exposed-secret indicators found. Treat this as urgent until manually disproven.'
+    ? '重大なシークレット漏えいの兆候があります。手動確認で否定できるまで緊急扱いしてください。'
     : findings.some(f => f.severity === 'high')
-      ? 'High-risk leakage indicators found. Review and rotate affected values.'
+      ? '高リスクの漏えい兆候があります。影響値を確認し、必要に応じてローテーションしてください。'
       : findings.length
-        ? 'No obvious critical secret found, but hardening gaps were detected.'
-        : 'No obvious client-side leakage indicators detected in the checked assets.';
+        ? '明らかな重大シークレットは見つかりませんでしたが、堅牢化不足が検出されました。'
+        : '確認したアセットでは明らかなクライアント側漏えい兆候は検出されませんでした。';
 
   return { url: url.toString(), score: finalScore, summary, findings, headers: main.headers, checkedAssets };
 }

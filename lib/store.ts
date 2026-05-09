@@ -3,7 +3,7 @@ import path from 'path';
 import crypto from 'crypto';
 import type { ScanReport } from './scanner';
 
-const DATA_FILE = path.join(process.cwd(), 'data', 'reports.json');
+const DATA_FILE = path.join(process.env.REPORT_DATA_DIR || path.join(process.cwd(), 'data'), 'reports.json');
 
 async function readAll(): Promise<ScanReport[]> {
   try {
